@@ -19,12 +19,14 @@ long coffeeStartTime = 0;
 void setup() {
   Bean.enableWakeOnConnect(true);
   Bean.setBeanName("coffeebean");
+  delay(5000);
 }
 
 
 void loop() {
   // put your main code here, to run repeatedly:
-  if(Bean.getConnectionState() || isCoffeeStarted)
+  bool isConnected = Bean.getConnectionState();
+  if(isConnected || isCoffeeStarted)
   {
     if(Serial.available())
     {
@@ -35,6 +37,8 @@ void loop() {
           {
             isCoffeeStarted = true;
             Bean.setLedGreen(75);
+            delay(1000);
+            Bean.setLedGreen(0);
             //trigger relay
             coffeeStartTime = millis();
             curState = COFFEE_BREW;
@@ -56,7 +60,9 @@ void loop() {
     {
       if(millis() > coffeeStartTime + BREW_TIME && curState == COFFEE_BREW)
       {
-        Bean.setLed(75, 0, 0);
+        Bean.setLedRed (75);
+        delay(1000);
+        Bean.setLedRed(0);
         Serial.write(COFFEE_HEAT);
         curState = COFFEE_HEAT;
       }
@@ -76,6 +82,7 @@ void loop() {
     Bean.setLedBlue(75);
     delay(1000);
     Bean.setLed(0,0,0);
-    Bean.sleep(0xFFFFFFFF);
+    Bean.sleep(0xFFFFFF);
+    
   }
 }

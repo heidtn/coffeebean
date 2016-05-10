@@ -126,6 +126,9 @@ public class MainActivity extends AppCompatActivity {
             System.out.println("connected to Bean!");
             CoffeeBean.endSerialGate();
             CoffeeBean.setAutoReconnect(true);
+            TextView tv = (TextView)findViewById(R.id.coffee_status);
+            tv.setText("press again to brew");
+
             byte[] toSend = {COFFEE_START};
             CoffeeBean.sendSerialMessage(toSend);
         }
