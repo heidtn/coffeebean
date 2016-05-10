@@ -1,5 +1,8 @@
 package com.nathanheidt.coffeebean;
 
+import android.content.pm.PackageManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -17,20 +20,17 @@ import com.punchthrough.bean.sdk.message.ScratchBank;
 
 import java.util.ArrayList;
 import java.util.List;
-
-
-
-
+import java.util.jar.Manifest;
 
 
 public class MainActivity extends AppCompatActivity {
 
-    final byte COFFEE_START       = 0x01;
-    final byte COFFEE_BREW        = 0x02;
-    final byte COFFEE_HEAT        = 0x03;
-    final byte COFFEE_OFF         = 0x04;
-    final byte COFFEE_RQ_STATE    = 0x05;
-    final byte COFFEE_ECHO        = 'e';
+    final byte COFFEE_START       = '1';
+    final byte COFFEE_BREW        = '2';
+    final byte COFFEE_HEAT        = '3';
+    final byte COFFEE_OFF         = '4';
+    final byte COFFEE_RQ_STATE    = '5';
+    final byte COFFEE_ECHO        = '6';
 
     Bean CoffeeBean = null;
 
@@ -38,6 +38,33 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //access coarse location as BLE needs this to work for some reason
+        if (ContextCompat.checkSelfPermission(this,
+                android.Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    android.Manifest.permission.ACCESS_COARSE_LOCATION)) {
+
+                // Show an expanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+
+            } else {
+
+                // No explanation needed, we can request the permission.
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION},
+                        0);
+
+                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                // app-defined int constant. The callback method gets the
+                // result of the request.
+            }
+        }
 
         if(CoffeeBean != null)
         {
@@ -52,9 +79,18 @@ public class MainActivity extends AppCompatActivity {
         bt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                TextView tv = (TextView)findViewById(R.id.coffee_status);
-                tv.setText("finding dem sweet beans");
-                BeanManager.getInstance().startDiscovery(listener);
+                if(CoffeeBean != null && CoffeeBean.isConnected())
+                {
+                    byte[] toSend = {COFFEE_RQ_STATE};
+                    CoffeeBean.sendSerialMessage(toSend);
+                }
+                else
+                {
+                    TextView tv = (TextView)findViewById(R.id.coffee_status);
+                    tv.setText("finding dem sweet beans");
+                    BeanManager.getInstance().startDiscovery(listener);
+                }
+
             }
         });
     }
@@ -88,6 +124,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onConnected() {
             System.out.println("connected to Bean!");
+            CoffeeBean.endSerialGate();
+            CoffeeBean.setAutoReconnect(true);
             byte[] toSend = {COFFEE_START};
             CoffeeBean.sendSerialMessage(toSend);
         }
@@ -109,6 +147,8 @@ public class MainActivity extends AppCompatActivity {
         public void onSerialMessageReceived(byte[] vals)
         {
             TextView tv = (TextView)findViewById(R.id.coffee_status);
+            System.out.print("new data: ");
+            System.out.println(vals[0]);
 
             switch (vals[0])
             {

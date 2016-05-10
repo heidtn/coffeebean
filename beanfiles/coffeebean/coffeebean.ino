@@ -3,12 +3,12 @@
 
 typedef enum
 {
-  COFFEE_START = 0x01,
-  COFFEE_BREW  = 0x02,
-  COFFEE_HEAT  = 0x03,
-  COFFEE_OFF   = 0x04,
-  COFFEE_RQ_STATE = 0x05,
-  COFFEE_ECHO  = 'e'
+  COFFEE_START = '1',
+  COFFEE_BREW  = '2',
+  COFFEE_HEAT  = '3',
+  COFFEE_OFF   = '4',
+  COFFEE_RQ_STATE = '5',
+  COFFEE_ECHO  = '6'
 } COFFEE_MESSAGES_T;
 
 COFFEE_MESSAGES_T curState = COFFEE_OFF;
@@ -24,7 +24,7 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  if(Bean.getConnectionState())
+  if(Bean.getConnectionState() || isCoffeeStarted)
   {
     if(Serial.available())
     {
@@ -34,37 +34,37 @@ void loop() {
           if(!isCoffeeStarted)
           {
             isCoffeeStarted = true;
-            Bean.setLed(0, 75, 0);
+            Bean.setLedGreen(75);
             //trigger relay
             coffeeStartTime = millis();
             curState = COFFEE_BREW;
           }
           
-          Serial.print(COFFEE_BREW);//coffee is brewing
+          Serial.write(curState);//coffee is brewing
       }
       if(readIn == COFFEE_ECHO)
       {
-        Serial.print(COFFEE_ECHO);
+        Serial.write(COFFEE_ECHO);
       }
       if(readIn == COFFEE_RQ_STATE)
       {
-        Serial.print(curState);
+        Serial.write(curState);
       }
     }
 
     if(isCoffeeStarted)
     {
-      if(millis() > coffeeStartTime + BREW_TIME)
+      if(millis() > coffeeStartTime + BREW_TIME && curState == COFFEE_BREW)
       {
         Bean.setLed(75, 0, 0);
-        Serial.print(COFFEE_HEAT);
+        Serial.write(COFFEE_HEAT);
         curState = COFFEE_HEAT;
       }
       if(millis() > coffeeStartTime + HEAT_TIME)
       {
         isCoffeeStarted = false;
         Bean.setLed(0,0,0);
-        Serial.print(COFFEE_OFF);
+        Serial.write(COFFEE_OFF);
         curState = COFFEE_OFF;
         Bean.disconnect();
         //disable relay
