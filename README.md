@@ -11,7 +11,7 @@ Load your coffee maker with water and your best beans (not the lightblue one you
 
 # known issues
 The Android code was hastily put together in a few hours just to get things rolling, so theres a few bugs.  
-*Mainly if you turn bluetooth off and try to use the magic button it will act like its searching, but won't actually be working.  Simple fix, but I am lazy.
-*The app won't remember to reconnect to the Bean if in the middle of coffeemaking, pressing the button either starts the process or requests an update if the process is already started.
-*Have to hit the button again after connecting to properly send the start brew command. Could fix with a small delay, but I'm not entirely sure what the problem is.
+  *Mainly if you turn bluetooth off and try to use the magic button it will act like its searching, but won't actually be working.  Simple fix, but I am lazy.
+  *The app won't remember to reconnect to the Bean if in the middle of coffeemaking, pressing the button either starts the process or requests an update if the process is already started.
+  *Have to hit the button again after connecting to properly send the start brew command. Could fix with a small delay, but I'm not entirely sure what the problem is.
 
