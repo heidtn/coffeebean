@@ -1,6 +1,6 @@
 #define BREW_TIME 240000 //4 minutes
 #define HEAT_TIME 1800000 //30 minutes
-
+#define COFFEE_PIN 0
 typedef enum
 {
   COFFEE_START = '1',
@@ -19,6 +19,8 @@ long coffeeStartTime = 0;
 void setup() {
   Bean.enableWakeOnConnect(true);
   Bean.setBeanName("coffeebean");
+  pinMode(COFFEE_PIN, OUTPUT);
+  digitalWrite(COFFEE_PIN, LOW);
   delay(5000);
 }
 
@@ -28,6 +30,7 @@ void loop() {
   bool isConnected = Bean.getConnectionState();
   if(isConnected || isCoffeeStarted)
   {
+    
     if(Serial.available())
     {
       char readIn = Serial.read();
@@ -42,6 +45,7 @@ void loop() {
             //trigger relay
             coffeeStartTime = millis();
             curState = COFFEE_BREW;
+            digitalWrite(COFFEE_PIN, HIGH);
           }
           
           Serial.write(curState);//coffee is brewing
@@ -73,6 +77,7 @@ void loop() {
         Serial.write(COFFEE_OFF);
         curState = COFFEE_OFF;
         Bean.disconnect();
+        digitalWrite(COFFEE_PIN, LOW);
         //disable relay
       }
     }
@@ -83,6 +88,5 @@ void loop() {
     delay(1000);
     Bean.setLed(0,0,0);
     Bean.sleep(0xFFFFFF);
-    
   }
 }
