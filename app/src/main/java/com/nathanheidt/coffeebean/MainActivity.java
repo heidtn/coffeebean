@@ -1,5 +1,9 @@
 package com.nathanheidt.coffeebean;
 
+import android.app.AlertDialog;
+import android.bluetooth.BluetoothAdapter;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -7,7 +11,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.punchthrough.bean.sdk.Bean;
 import com.punchthrough.bean.sdk.BeanDiscoveryListener;
@@ -31,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
     final byte COFFEE_OFF         = '4';
     final byte COFFEE_RQ_STATE    = '5';
     final byte COFFEE_ECHO        = '6';
+
+    final static int REQUEST_ENABLE_BT = 1;
 
     Bean CoffeeBean = null;
 
@@ -66,6 +74,37 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+
+
+
+
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (mBluetoothAdapter == null) {
+            // Device does not support Bluetooth
+        } else {
+            if (!mBluetoothAdapter.isEnabled()) {
+                new AlertDialog.Builder(this)
+                        .setTitle("Enable Bluetooth?")
+                        .setMessage("You want enable Bluetooth?  Is good I promise.")
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                Toast.makeText(MainActivity.this, "BlueTooth On", Toast.LENGTH_LONG).show();
+                                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+                            }
+                        })
+                        .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                Toast.makeText(MainActivity.this, "BlueTooth Off", Toast.LENGTH_LONG).show();
+
+                            }
+                        })
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
+            }
+        }
+
+
         if(CoffeeBean != null)
         {
             if(CoffeeBean.isConnected())
@@ -79,6 +118,8 @@ public class MainActivity extends AppCompatActivity {
         bt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                ProgressBar spin = (ProgressBar)findViewById(R.id.progressBar);
+                spin.setVisibility(View.VISIBLE);
                 if(CoffeeBean != null && CoffeeBean.isConnected())
                 {
                     byte[] toSend = {COFFEE_RQ_STATE};
@@ -105,6 +146,7 @@ public class MainActivity extends AppCompatActivity {
     BeanDiscoveryListener listener = new BeanDiscoveryListener() {
         @Override
         public void onBeanDiscovered(Bean bean, int rssi) {
+
             if(bean.getDevice().getName().equals("coffeebean"))
             {
                 CoffeeBean = bean;
@@ -131,6 +173,8 @@ public class MainActivity extends AppCompatActivity {
 
             byte[] toSend = {COFFEE_START};
             CoffeeBean.sendSerialMessage(toSend);
+            ProgressBar spin = (ProgressBar)findViewById(R.id.progressBar);
+            spin.setVisibility(View.GONE);
         }
 
         // In practice you must implement the other Listener methods
