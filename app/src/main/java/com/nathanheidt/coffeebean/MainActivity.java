@@ -118,8 +118,6 @@ public class MainActivity extends AppCompatActivity {
         bt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ProgressBar spin = (ProgressBar)findViewById(R.id.progressBar);
-                spin.setVisibility(View.VISIBLE);
                 if(CoffeeBean != null && CoffeeBean.isConnected())
                 {
                     byte[] toSend = {COFFEE_RQ_STATE};
@@ -127,6 +125,8 @@ public class MainActivity extends AppCompatActivity {
                 }
                 else
                 {
+                    ProgressBar spin = (ProgressBar)findViewById(R.id.progressBar);
+                    spin.setVisibility(View.VISIBLE);
                     TextView tv = (TextView)findViewById(R.id.coffee_status);
                     tv.setText("finding dem sweet beans");
                     BeanManager.getInstance().startDiscovery(listener);
